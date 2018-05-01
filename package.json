@@ -1,0 +1,19 @@
+{
+  "name": "arena",
+  "repo": "daddinuz/arena",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Arena memory allocator.",
+  "keywords": [
+    "Memory",
+    "Arena"
+  ],
+  "src": [
+    "sources/arena.h",
+    "sources/arena.c"
+  ],
+  "dependencies": {
+    "daddinuz/option": "0.20.0"
+  },
+  "makefile": "arena.cmake"
+}
