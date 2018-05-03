@@ -28,9 +28,9 @@
 
 #include <assert.h>
 #include <memory.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdalign.h>
+#include <alligator/alligator.h>
 #include "arena.h"
 #include "arena_config.h"
 
@@ -55,6 +55,8 @@ const char *Arena_version(void) {
     return STR(ARENA_VERSION_MAJOR) "." STR(ARENA_VERSION_MINOR) "." STR(ARENA_VERSION_PATCH) ARENA_VERSION_SUFFIX;
 }
 
+static const size_t maxAlign = alignof(max_align_t);
+
 static inline __attribute__((__warn_unused_result__)) size_t max(const size_t a, const size_t b) {
     return a > b ? a : b;
 }
@@ -63,7 +65,7 @@ static inline __attribute__((__warn_unused_result__)) size_t min(const size_t a,
     return a < b ? a : b;
 }
 
-static inline __attribute__((__warn_unused_result__)) size_t roundToAlignmentBoundary(size_t alignment, size_t size) {
+static inline __attribute__((__warn_unused_result__)) size_t roundToAlignBoundary(size_t alignment, size_t size) {
     assert(alignment > 0);
     assert(size > 0);
     return ((size + alignment - 1) / alignment) * alignment;
@@ -77,16 +79,14 @@ struct Chunk {
 };
 
 static __attribute__((__warn_unused_result__)) OptionOf(struct Chunk *) Chunk_new(size_t capacityHint) {
-    const size_t capacity = roundToAlignmentBoundary(
-            alignof(max_align_t),
-            max(capacityHint, ARENA_DEFAULT_CHUNK_CAPACITY)
+    struct Chunk *self;
+    const size_t capacity = roundToAlignBoundary(maxAlign, max(capacityHint, ARENA_DEFAULT_CHUNK_CAPACITY));
+    Option option = Alligator_aligned_alloc(
+            maxAlign,
+            roundToAlignBoundary(maxAlign, offsetof(struct Chunk, memory)) + capacity * sizeof(self->memory[0])
     );
-    struct Chunk *self = aligned_alloc(
-            alignof(max_align_t),
-            roundToAlignmentBoundary(alignof(max_align_t), offsetof(struct Chunk, memory)) +
-            capacity * sizeof(self->memory[0])
-    );
-    if (self) {
+    if (Option_isSome(option)) {
+        self = Option_unwrap(option);
         self->size = 0;
         self->capacity = capacity;
         self->next = NULL;
@@ -96,7 +96,7 @@ static __attribute__((__warn_unused_result__)) OptionOf(struct Chunk *) Chunk_ne
 }
 
 static inline void Chunk_delete(struct Chunk *self) {
-    free(self);
+    Alligator_free(self);
 }
 
 struct Arena {
@@ -112,9 +112,13 @@ OptionOf(struct Arena *) Arena_new(void) {
 }
 
 OptionOf(struct Arena *) Arena_withCapacity(const size_t capacityHint) {
-    struct Arena *self = aligned_alloc(alignof(*self), sizeof(*self));
-    if (self) {
-        Option option = Chunk_new(capacityHint);
+    Option option;
+    struct Arena *self;
+
+    option = Alligator_aligned_alloc(alignof(*self), sizeof(*self));
+    if (Option_isSome(option)) {
+        self = Option_unwrap(option);
+        option = Chunk_new(capacityHint);
         if (Option_isSome(option)) {
             struct Chunk *chunk = Option_unwrap(option);
             self->size = self->slop = 0;
@@ -123,8 +127,9 @@ OptionOf(struct Arena *) Arena_withCapacity(const size_t capacityHint) {
             self->head = chunk;
             return Option_some(self);
         }
-        free(self);
+        Alligator_free(self);
     }
+
     return None;
 }
 
@@ -132,8 +137,7 @@ OptionOf(void *) Arena_request(struct Arena *const self, const size_t size) {
     assert(self);
     assert(self->head);
     assert(size > 0);
-    const size_t alignment = alignof(max_align_t);
-    return Arena_requestWithAlignment(self, alignment, roundToAlignmentBoundary(alignment, size));
+    return Arena_requestWithAlignment(self, maxAlign, roundToAlignBoundary(maxAlign, size));
 }
 
 OptionOf(void *) Arena_requestWithAlignment(struct Arena *const self, const size_t alignment, const size_t size) {
@@ -251,6 +255,6 @@ void Arena_delete(struct Arena *self) {
             self->head = chunk->next;
             Chunk_delete(chunk);
         }
-        free(self);
+        Alligator_free(self);
     }
 }

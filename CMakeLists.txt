@@ -5,10 +5,12 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 
 include_directories(deps)
-include(deps/option/option.cmake)
 include(deps/panic/panic.cmake)
+include(deps/option/option.cmake)
+include(deps/alligator/alligator.cmake)
 
 add_library(arena sources/arena_config.h sources/arena.h sources/arena.c)
+target_link_libraries(arena PRIVATE alligator)
 target_link_libraries(arena PUBLIC option)
 
 add_executable(main examples/main.c)

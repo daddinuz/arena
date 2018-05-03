@@ -40,11 +40,11 @@ extern "C" {
 #endif
 
 #define ARENA_VERSION_MAJOR       0
-#define ARENA_VERSION_MINOR       1
+#define ARENA_VERSION_MINOR       2
 #define ARENA_VERSION_PATCH       0
 #define ARENA_VERSION_SUFFIX      ""
 #define ARENA_VERSION_IS_RELEASE  0
-#define ARENA_VERSION_HEX         0x000100
+#define ARENA_VERSION_HEX         0x000200
 
 /**
  * @return The semantic versioning string of the package.
