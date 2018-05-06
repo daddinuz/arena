@@ -61,7 +61,7 @@ void *__Option_expect(const char *const file, const int line, const Option self,
     if (Option_isNone(self)) {
         va_list args;
         va_start(args, format);
-        __Panic_vabort(file, line, format, args);
+        __Panic_vterminate(file, line, format, args);
     }
     return self.__value;
 }

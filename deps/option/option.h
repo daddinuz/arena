@@ -39,17 +39,16 @@ extern "C" {
 #endif
 
 #define OPTION_VERSION_MAJOR       0
-#define OPTION_VERSION_MINOR       20
+#define OPTION_VERSION_MINOR       21
 #define OPTION_VERSION_PATCH       0
 #define OPTION_VERSION_SUFFIX      ""
 #define OPTION_VERSION_IS_RELEASE  0
-#define OPTION_VERSION_HEX         0x002000
+#define OPTION_VERSION_HEX         0x002100
 
 /**
  * @return The semantic versioning string of the package.
  */
-extern const char *
-Option_version(void)
+extern const char *Option_version(void)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -81,8 +80,7 @@ extern const Option None;
  * @param value The wrapped value <b>must not be NULL</b>.
  * @return A new Option instance wrapping value.
  */
-extern Option
-Option_some(void *value)
+extern Option Option_some(void *value)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -91,8 +89,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @param self The Option instance.
  * @return false if Option is None else true.
  */
-extern bool
-Option_isSome(Option self)
+extern bool Option_isSome(Option self)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -101,8 +98,7 @@ __attribute__((__warn_unused_result__));
  * @param self The Option instance.
  * @return true if Option is None else false.
  */
-extern bool
-Option_isNone(Option self)
+extern bool Option_isNone(Option self)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -119,15 +115,14 @@ __attribute__((__warn_unused_result__));
  * @param ... The format params.
  * @return The unwrapped value or terminates the execution.
  */
-extern void *
-__Option_expect(const char *file, int line, Option self, const char *format, ...)
+extern void *__Option_expect(const char *file, int line, Option self, const char *format, ...)
 __attribute__((__warn_unused_result__, __nonnull__, __format__(__printf__, 4, 5)));
 
 /**
  * @see __Option_expect(const char *file, int line, Option self, const char *format, ...)
  */
 #define Option_expect(xSelf, ...) \
-  __Option_expect(__FILE__, __LINE__, (xSelf), __VA_ARGS__)
+    __Option_expect(__FILE__, __LINE__, (xSelf), __VA_ARGS__)
 
 /**
  * Unwraps an Option, yielding its wrapped value if it's not None.
@@ -141,15 +136,14 @@ __attribute__((__warn_unused_result__, __nonnull__, __format__(__printf__, 4, 5)
  * @param self The Option instance.
  * @return The unwrapped value or terminates the execution.
  */
-extern void *
-__Option_unwrap(const char *file, int line, Option self)
+extern void *__Option_unwrap(const char *file, int line, Option self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
  * @see __Option_unwrap(const char *file, int line, Option self)
  */
 #define Option_unwrap(xSelf) \
-  __Option_unwrap(__FILE__, __LINE__, (xSelf))
+    __Option_unwrap(__FILE__, __LINE__, (xSelf))
 
 #ifdef __cplusplus
 }

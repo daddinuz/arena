@@ -40,17 +40,16 @@ extern "C" {
 #endif
 
 #define ARENA_VERSION_MAJOR       0
-#define ARENA_VERSION_MINOR       2
+#define ARENA_VERSION_MINOR       3
 #define ARENA_VERSION_PATCH       0
 #define ARENA_VERSION_SUFFIX      ""
 #define ARENA_VERSION_IS_RELEASE  0
-#define ARENA_VERSION_HEX         0x000200
+#define ARENA_VERSION_HEX         0x000300
 
 /**
  * @return The semantic versioning string of the package.
  */
-extern const char *
-Arena_version(void)
+extern const char *Arena_version(void)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -64,8 +63,7 @@ struct Arena;
  *
  * @return An option wrapping the new arena or None in case of out of memory.
  */
-extern OptionOf(struct Arena *)
-Arena_new(void)
+extern OptionOf(struct Arena *) Arena_new(void)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -74,8 +72,7 @@ __attribute__((__warn_unused_result__));
  * @param capacityHint The suggested capacity for the arena (if 0 a default capacity will be used).
  * @return An option wrapping the new arena or None in case of out of memory.
  */
-extern OptionOf(struct Arena *)
-Arena_withCapacity(size_t capacityHint)
+extern OptionOf(struct Arena *) Arena_withCapacity(size_t capacityHint)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -89,8 +86,7 @@ __attribute__((__warn_unused_result__));
  *
  * @return An option wrapping the requested memory block or None in case of out of memory.
  */
-extern OptionOf(void *)
-Arena_request(struct Arena *self, size_t size)
+extern OptionOf(void *) Arena_request(struct Arena *self, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -108,8 +104,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  *
  * @return An option wrapping the requested memory block or None in case of out of memory.
  */
-extern OptionOf(void *)
-Arena_requestWithAlignment(struct Arena *self, size_t alignment, size_t size)
+extern OptionOf(void *) Arena_requestWithAlignment(struct Arena *self, size_t alignment, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -119,8 +114,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The size of the memory currently in use by the arena.
  */
-extern size_t
-Arena_getSize(const struct Arena *self)
+extern size_t Arena_getSize(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -130,8 +124,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The size of the slop memory currently in use by the arena.
  */
-extern size_t
-Arena_getSlop(const struct Arena *self)
+extern size_t Arena_getSlop(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -141,8 +134,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The current capacity of the arena.
  */
-extern size_t
-Arena_getCapacity(const struct Arena *self)
+extern size_t Arena_getCapacity(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -152,8 +144,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The size of the biggest segment of memory currently available.
  */
-extern size_t
-Arena_getBestAvailable(const struct Arena *self)
+extern size_t Arena_getBestAvailable(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -163,8 +154,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The size of the smallest segment of memory currently available.
  */
-extern size_t
-Arena_getWorstAvailable(const struct Arena *self)
+extern size_t Arena_getWorstAvailable(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -174,8 +164,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention self must not be NULL.
  * @return The number of chunks held by the arena.
  */
-extern size_t
-Arena_getChunks(const struct Arena *self)
+extern size_t Arena_getChunks(const struct Arena *self)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -185,8 +174,7 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @param self The arena instance.
  * @attention self must not be NULL.
  */
-extern void
-Arena_clear(struct Arena *self)
+extern void Arena_clear(struct Arena *self)
 __attribute__((__nonnull__));
 
 /**
@@ -195,8 +183,7 @@ __attribute__((__nonnull__));
  * @param self The arena instance.
  * @attention self must not be NULL.
  */
-extern void
-Arena_shrink(struct Arena *self)
+extern void Arena_shrink(struct Arena *self)
 __attribute__((__nonnull__));
 
 /**
@@ -204,8 +191,7 @@ __attribute__((__nonnull__));
  *
  * @param self The arena instance.
  */
-extern void
-Arena_delete(struct Arena *self);
+extern void Arena_delete(struct Arena *self);
 
 #ifdef __cplusplus
 }

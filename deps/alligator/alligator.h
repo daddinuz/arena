@@ -40,41 +40,35 @@ extern "C" {
 #endif
 
 #define ALLIGATOR_VERSION_MAJOR       0
-#define ALLIGATOR_VERSION_MINOR       22
+#define ALLIGATOR_VERSION_MINOR       23
 #define ALLIGATOR_VERSION_PATCH       0
 #define ALLIGATOR_VERSION_SUFFIX      ""
 #define ALLIGATOR_VERSION_IS_RELEASE  0
-#define ALLIGATOR_VERSION_HEX         0x002200
+#define ALLIGATOR_VERSION_HEX         0x002300
 
 /**
  * @return The semantic versioning string of the package.
  */
-extern const char *
-Alligator_version(void)
+extern const char *Alligator_version(void)
 __attribute__((__warn_unused_result__));
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 
-extern Option
-Alligator_aligned_alloc(size_t alignment, size_t size)
+extern Option Alligator_aligned_alloc(size_t alignment, size_t size)
 __attribute__((__warn_unused_result__));
 
 #endif
 
-extern Option
-Alligator_malloc(size_t size)
+extern Option Alligator_malloc(size_t size)
 __attribute__((__warn_unused_result__));
 
-extern Option
-Alligator_calloc(size_t numberOfMembers, size_t memberSize)
+extern Option Alligator_calloc(size_t numberOfMembers, size_t memberSize)
 __attribute__((__warn_unused_result__));
 
-extern Option
-Alligator_realloc(void *ptr, size_t newSize)
+extern Option Alligator_realloc(void *ptr, size_t newSize)
 __attribute__((__warn_unused_result__));
 
-extern void
-Alligator_free(void *ptr);
+extern void Alligator_free(void *ptr);
 
 #ifdef __cplusplus
 }

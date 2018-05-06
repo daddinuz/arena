@@ -39,44 +39,54 @@ extern "C" {
 #endif
 
 #define PANIC_VERSION_MAJOR       0
-#define PANIC_VERSION_MINOR       1
+#define PANIC_VERSION_MINOR       2
 #define PANIC_VERSION_PATCH       0
 #define PANIC_VERSION_SUFFIX      ""
 #define PANIC_VERSION_IS_RELEASE  0
-#define PANIC_VERSION_HEX         0x000100
+#define PANIC_VERSION_HEX         0x000200
 
 /**
  * @return The semantic versioning string of the package.
  */
-extern const char *
-Panic_version(void)
+extern const char *Panic_version(void)
 __attribute__((__warn_unused_result__));
 
 /**
- * Reports the error and aborts execution.
- * @warning this function should not be called directly, use the exported macro instead.
+ * Type signature of the callback function to be executed on exit.
  */
-extern void
-__Panic_abort(const char *file, int line, const char *format, ...)
-__attribute__((__nonnull__(1, 3), __format__(__printf__, 3, 4), __noreturn__));
+typedef void (*Panic_Callback)(void);
+
+/**
+ * Registers a callback to execute before terminating.
+ *
+ * @param callback The callback to be executed, if NULL nothing will be executed.
+ * @return The previous registered callback if any else NULL.
+ */
+extern Panic_Callback Panic_registerCallback(Panic_Callback callback);
+
+/**
+ * Reports the error and terminates execution.
+ * @warning This function should not be called directly, use the exported macro instead.
+ */
+extern void __Panic_terminate(const char *file, int line, const char *format, ...)
+__attribute__((__nonnull__, __format__(__printf__, 3, 4), __noreturn__));
 
 /**
  * Like __panic but takes a variadic list.
  *
  * @see __panic(const char *file, int line, const char *format, ...)
  *
- * @warning this function should not be called directly, use the exported macro instead.
+ * @warning This function should not be called directly, use the exported macro instead.
  */
-extern void
-__Panic_vabort(const char *file, int line, const char *format, va_list args)
-__attribute__((__nonnull__(1, 3), __format__(__printf__, 3, 0), __noreturn__));
+extern void __Panic_vterminate(const char *file, int line, const char *format, va_list args)
+__attribute__((__nonnull__, __format__(__printf__, 3, 0), __noreturn__));
 
 /**
  * This macro acts like a wrapper over __panic function passing the right
  * call coordinates (file and line number) for a better error report.
  */
-#define Panic_abort(...) \
-    __Panic_abort(__FILE__, __LINE__, __VA_ARGS__)
+#define Panic_terminate(...) \
+    __Panic_terminate(__FILE__, __LINE__, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

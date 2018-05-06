@@ -81,10 +81,8 @@ struct Chunk {
 static __attribute__((__warn_unused_result__)) OptionOf(struct Chunk *) Chunk_new(size_t capacityHint) {
     struct Chunk *self;
     const size_t capacity = roundToAlignBoundary(maxAlign, max(capacityHint, ARENA_DEFAULT_CHUNK_CAPACITY));
-    Option option = Alligator_aligned_alloc(
-            maxAlign,
-            roundToAlignBoundary(maxAlign, offsetof(struct Chunk, memory)) + capacity * sizeof(self->memory[0])
-    );
+    Option option = Alligator_aligned_alloc(maxAlign, roundToAlignBoundary(maxAlign, offsetof(struct Chunk, memory)) +
+                                                      capacity * sizeof(self->memory[0]));
     if (Option_isSome(option)) {
         self = Option_unwrap(option);
         self->size = 0;
