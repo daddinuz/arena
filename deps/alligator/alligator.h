@@ -40,17 +40,11 @@ extern "C" {
 #endif
 
 #define ALLIGATOR_VERSION_MAJOR       0
-#define ALLIGATOR_VERSION_MINOR       23
+#define ALLIGATOR_VERSION_MINOR       24
 #define ALLIGATOR_VERSION_PATCH       0
 #define ALLIGATOR_VERSION_SUFFIX      ""
 #define ALLIGATOR_VERSION_IS_RELEASE  0
-#define ALLIGATOR_VERSION_HEX         0x002300
-
-/**
- * @return The semantic versioning string of the package.
- */
-extern const char *Alligator_version(void)
-__attribute__((__warn_unused_result__));
+#define ALLIGATOR_VERSION_HEX         0x002400
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 

@@ -33,46 +33,41 @@ extern "C" {
 #endif
 
 #include <stddef.h>
-#include <option/option.h>
 
 #if !(defined(__GNUC__) || defined(__clang__))
 #define __attribute__(...)
 #endif
 
 #define ARENA_VERSION_MAJOR       0
-#define ARENA_VERSION_MINOR       3
+#define ARENA_VERSION_MINOR       4
 #define ARENA_VERSION_PATCH       0
 #define ARENA_VERSION_SUFFIX      ""
 #define ARENA_VERSION_IS_RELEASE  0
-#define ARENA_VERSION_HEX         0x000300
-
-/**
- * @return The semantic versioning string of the package.
- */
-extern const char *Arena_version(void)
-__attribute__((__warn_unused_result__));
+#define ARENA_VERSION_HEX         0x000400
 
 /**
  * Arena is a region of memory which holds a collection of allocated objects
- * that can be efficiently deallocated all at once.
+ * that can be efficiently de-allocated all at once.
+ *
+ * @attention Every function in this library terminates the program in case of out of memory.
  */
 struct Arena;
 
 /**
  * Creates a new arena with default capacity.
  *
- * @return An option wrapping the new arena or None in case of out of memory.
+ * @return A new arena instance.
  */
-extern OptionOf(struct Arena *) Arena_new(void)
+extern struct Arena *Arena_new(void)
 __attribute__((__warn_unused_result__));
 
 /**
  * Creates a new arena with at least the suggested capacity.
  *
  * @param capacityHint The suggested capacity for the arena (if 0 a default capacity will be used).
- * @return An option wrapping the new arena or None in case of out of memory.
+ * @return A new arena instance.
  */
-extern OptionOf(struct Arena *) Arena_withCapacity(size_t capacityHint)
+extern struct Arena *Arena_withCapacity(size_t capacityHint)
 __attribute__((__warn_unused_result__));
 
 /**
@@ -84,9 +79,9 @@ __attribute__((__warn_unused_result__));
  * @attention self must not be NULL.
  * @attention size must be greater than 0.
  *
- * @return An option wrapping the requested memory block or None in case of out of memory.
+ * @return The requested memory block.
  */
-extern OptionOf(void *) Arena_request(struct Arena *self, size_t size)
+extern void *Arena_request(struct Arena *self, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**
@@ -102,9 +97,9 @@ __attribute__((__warn_unused_result__, __nonnull__));
  * @attention size must be greater than 0.
  * @attention size must be an integral multiple of alignment.
  *
- * @return An option wrapping the requested memory block or None in case of out of memory.
+ * @return The requested memory block.
  */
-extern OptionOf(void *) Arena_requestWithAlignment(struct Arena *self, size_t alignment, size_t size)
+extern void *Arena_requestWithAlignment(struct Arena *self, size_t alignment, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 /**

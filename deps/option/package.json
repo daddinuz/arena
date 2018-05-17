@@ -1,7 +1,7 @@
 {
   "name": "option",
   "repo": "daddinuz/option",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "license": "MIT",
   "description": "Option type resembling Rust's Option.",
   "keywords": [
@@ -13,7 +13,7 @@
     "sources/option.c"
   ],
   "dependencies": {
-    "daddinuz/panic": "0.2.0"
+    "daddinuz/panic": "0.3.0"
   },
-  "makefile": "option.cmake"
+  "makefile": "sources/build.cmake"
 }

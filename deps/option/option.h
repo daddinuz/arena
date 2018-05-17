@@ -39,17 +39,11 @@ extern "C" {
 #endif
 
 #define OPTION_VERSION_MAJOR       0
-#define OPTION_VERSION_MINOR       21
+#define OPTION_VERSION_MINOR       22
 #define OPTION_VERSION_PATCH       0
 #define OPTION_VERSION_SUFFIX      ""
 #define OPTION_VERSION_IS_RELEASE  0
-#define OPTION_VERSION_HEX         0x002100
-
-/**
- * @return The semantic versioning string of the package.
- */
-extern const char *Option_version(void)
-__attribute__((__warn_unused_result__));
+#define OPTION_VERSION_HEX         0x002200
 
 /**
  * Option represents encapsulation of an optional value; it is used as the return type of functions which may or may

@@ -42,7 +42,7 @@ static char *String_new(struct Arena *const arena, const char *const literal) {
     assert(arena);
     assert(literal);
     const size_t size = strlen(literal);
-    char *self = Option_unwrap(Arena_requestWithAlignment(arena, alignof(*self), size + 1));
+    char *self = Arena_requestWithAlignment(arena, alignof(*self), size + 1);
     strncpy(self, literal, size);
     self[size] = 0;
     return self;
@@ -57,7 +57,7 @@ static struct Person *Person_new(struct Arena *const arena, const char *const fi
     assert(arena);
     assert(firstName);
     assert(lastName);
-    struct Person *self = Option_unwrap(Arena_requestWithAlignment(arena, alignof(*self), sizeof(*self)));
+    struct Person *self = Arena_requestWithAlignment(arena, alignof(*self), sizeof(*self));
     self->firstName = String_new(arena, firstName);
     self->lastName = String_new(arena, lastName);
     return self;
@@ -69,7 +69,7 @@ static void Person_print(const struct Person *const self) {
 }
 
 int main() {
-    struct Arena *arena = Option_unwrap(Arena_new());
+    struct Arena *arena = Arena_new();
     printArena(arena);
 
     struct Person *giuseppeGaribaldi = Person_new(arena, "Giuseppe", "Garibaldi");

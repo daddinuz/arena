@@ -29,16 +29,6 @@
 #include "alligator.h"
 #include "alligator_config.h"
 
-#define _STR(x)     #x
-#define STR(x)      _STR(x)
-
-const char *Alligator_version(void) {
-    return STR(ALLIGATOR_VERSION_MAJOR) "."
-           STR(ALLIGATOR_VERSION_MINOR) "."
-           STR(ALLIGATOR_VERSION_PATCH)
-           ALLIGATOR_VERSION_SUFFIX;
-}
-
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 
 Option Alligator_aligned_alloc(size_t alignment, size_t size) {

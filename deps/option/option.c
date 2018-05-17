@@ -33,13 +33,6 @@
 #include <panic/panic.h>
 #include "option.h"
 
-#define _STR(x)    #x
-#define STR(x)      _STR(x)
-
-const char *Option_version(void) {
-    return STR(OPTION_VERSION_MAJOR) "." STR(OPTION_VERSION_MINOR) "." STR(OPTION_VERSION_PATCH) OPTION_VERSION_SUFFIX;
-}
-
 const Option None = {.__value=NULL};
 
 Option Option_some(void *const value) {
