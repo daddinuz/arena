@@ -1,29 +1,28 @@
 /*
- * Author: daddinuz
- * email:  daddinuz@gmail.com
- *
- * Copyright (c) 2018 Davide Di Carlo
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+Author: daddinuz
+email:  daddinuz@gmail.com
+
+Copyright (c) 2018 Davide Di Carlo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include <stdio.h>
@@ -42,7 +41,7 @@ static char *String_new(struct Arena *const arena, const char *const literal) {
     assert(arena);
     assert(literal);
     const size_t size = strlen(literal);
-    char *self = Arena_requestWithAlignment(arena, alignof(*self), size + 1);
+    char *self = Arena_requestWithAlignment(arena, alignof(char), size + 1);
     strncpy(self, literal, size);
     self[size] = 0;
     return self;
@@ -57,7 +56,7 @@ static struct Person *Person_new(struct Arena *const arena, const char *const fi
     assert(arena);
     assert(firstName);
     assert(lastName);
-    struct Person *self = Arena_requestWithAlignment(arena, alignof(*self), sizeof(*self));
+    struct Person *self = Arena_request(arena, sizeof(*self));
     self->firstName = String_new(arena, firstName);
     self->lastName = String_new(arena, lastName);
     return self;
@@ -78,11 +77,15 @@ int main() {
     struct Person *vittorioEmanuele = Person_new(arena, "Vittorio", "Emanuele");
     printArena(arena);
 
+    Person_print(giuseppeGaribaldi);
+    Person_print(vittorioEmanuele);
+
+    Arena_clear(arena);
+    printArena(arena);
+
     struct Person *camilloBenso = Person_new(arena, "Camillo", "Benso");
     printArena(arena);
 
-    Person_print(giuseppeGaribaldi);
-    Person_print(vittorioEmanuele);
     Person_print(camilloBenso);
 
     Arena_delete(arena);

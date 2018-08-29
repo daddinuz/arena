@@ -1,16 +1,17 @@
 {
   "name": "option",
   "repo": "daddinuz/option",
-  "version": "0.22.0",
+  "version": "0.25.0",
   "license": "MIT",
-  "description": "Option type resembling Rust's Option.",
+  "description": "Monadic option type.",
   "keywords": [
-    "Error Handling",
-    "Option"
+    "option-type",
+    "monads",
+    "functional-programming"
   ],
   "src": [
-    "sources/option.h",
-    "sources/option.c"
+    "sources/option.c",
+    "sources/option.h"
   ],
   "dependencies": {
     "daddinuz/panic": "0.3.0"

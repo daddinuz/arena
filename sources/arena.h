@@ -1,55 +1,56 @@
 /*
- * Author: daddinuz
- * email:  daddinuz@gmail.com
- *
- * Copyright (c) 2018 Davide Di Carlo
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+Author: daddinuz
+email:  daddinuz@gmail.com
+
+Copyright (c) 2018 Davide Di Carlo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #pragma once
+
+#include <stddef.h>
+
+#if !(defined(__GNUC__) || defined(__clang__))
+__attribute__(...)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stddef.h>
+#define ARENA_VERSION_MAJOR         0
+#define ARENA_VERSION_MINOR         5
+#define ARENA_VERSION_PATCH         0
+#define ARENA_VERSION_SUFFIX        ""
+#define ARENA_VERSION_IS_RELEASE    0
+#define ARENA_VERSION_HEX           0x000500
 
-#if !(defined(__GNUC__) || defined(__clang__))
-#define __attribute__(...)
-#endif
-
-#define ARENA_VERSION_MAJOR       0
-#define ARENA_VERSION_MINOR       4
-#define ARENA_VERSION_PATCH       0
-#define ARENA_VERSION_SUFFIX      ""
-#define ARENA_VERSION_IS_RELEASE  0
-#define ARENA_VERSION_HEX         0x000400
+/**
+ * @attention Every function in this library terminates the program in case of out of memory.
+ */
 
 /**
  * Arena is a region of memory which holds a collection of allocated objects
  * that can be efficiently de-allocated all at once.
- *
- * @attention Every function in this library terminates the program in case of out of memory.
  */
 struct Arena;
 
@@ -64,7 +65,7 @@ __attribute__((__warn_unused_result__));
 /**
  * Creates a new arena with at least the suggested capacity.
  *
- * @param capacityHint The suggested capacity for the arena (if 0 a default capacity will be used).
+ * @param capacityHint The suggested capacity for the arena (if smaller than default capacity the last one will be used).
  * @return A new arena instance.
  */
 extern struct Arena *Arena_withCapacity(size_t capacityHint)
@@ -81,8 +82,8 @@ __attribute__((__warn_unused_result__));
  *
  * @return The requested memory block.
  */
-extern void *Arena_request(struct Arena *self, size_t size)
-__attribute__((__warn_unused_result__, __nonnull__));
+#define Arena_request(self, size) \
+    __Arena_request((__FILE__), (__LINE__), (self), (size))
 
 /**
  * Returns a block of allocated memory of the specified size.
@@ -99,8 +100,8 @@ __attribute__((__warn_unused_result__, __nonnull__));
  *
  * @return The requested memory block.
  */
-extern void *Arena_requestWithAlignment(struct Arena *self, size_t alignment, size_t size)
-__attribute__((__warn_unused_result__, __nonnull__));
+#define Arena_requestWithAlignment(self, alignment, size) \
+    __Arena_requestWithAlignment((__FILE__), (__LINE__), (self), (alignment), (size))
 
 /**
  * Gets the size of the memory currently in use by the arena.
@@ -187,6 +188,18 @@ __attribute__((__nonnull__));
  * @param self The arena instance.
  */
 extern void Arena_delete(struct Arena *self);
+
+/**
+ * @attention this function must be treated as opaque therefore must not be called directly.
+ */
+extern void *__Arena_request(const char *file, int line, struct Arena *self, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__));
+
+/**
+ * @attention this function must be treated as opaque therefore must not be called directly.
+ */
+extern void *__Arena_requestWithAlignment(const char *file, int line, struct Arena *self, size_t alignment, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__));
 
 #ifdef __cplusplus
 }

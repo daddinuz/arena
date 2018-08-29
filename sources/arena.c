@@ -1,29 +1,28 @@
 /*
- * Author: daddinuz
- * email:  daddinuz@gmail.com
- *
- * Copyright (c) 2018 Davide Di Carlo
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+Author: daddinuz
+email:  daddinuz@gmail.com
+
+Copyright (c) 2018 Davide Di Carlo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include <assert.h>
@@ -38,27 +37,35 @@
     #error "C/C++ 11 support is required"
 #endif
 
-#if ARENA_DEFAULT_CHUNK_CAPACITY <= 0
+#if ARENA_DEFAULT_CHUNK_CAPACITY < 1024
     #error "ARENA_DEFAULT_CHUNK_CAPACITY must be greater than zero."
 #endif
 
-#define assertIsPowerOfTwo(xNumber) \
-    do { size_t __xNumber = (xNumber); assert((__xNumber != 0) && ((__xNumber & (~__xNumber + 1)) == __xNumber)); } while (false)
-
-#define assertIsIntegralMultiple(xAlignment, xSize) \
-    do { size_t __xAlignment = (xAlignment), __xSize = (xSize); assert((__xSize % __xAlignment) == 0); } while (false)
-
 static const size_t maxAlign = alignof(max_align_t);
 
-static inline __attribute__((__warn_unused_result__)) size_t max(const size_t a, const size_t b) {
+static inline void assertIsPowerOfTwo(const size_t number) {
+    (void) number;
+    assert((number != 0) && ((number & (~number + 1)) == number));
+}
+
+static inline void assertIsIntegralMultiple(const size_t alignment, const size_t size) {
+    (void) alignment;
+    (void) size;
+    assert((size % alignment) == 0);
+}
+
+static inline __attribute__((__warn_unused_result__))
+size_t max(const size_t a, const size_t b) {
     return a > b ? a : b;
 }
 
-static inline __attribute__((__warn_unused_result__)) size_t min(const size_t a, const size_t b) {
+static inline __attribute__((__warn_unused_result__))
+size_t min(const size_t a, const size_t b) {
     return a < b ? a : b;
 }
 
-static inline __attribute__((__warn_unused_result__)) size_t roundToAlignBoundary(size_t alignment, size_t size) {
+static inline __attribute__((__warn_unused_result__))
+size_t roundToAlignBoundary(const size_t alignment, const size_t size) {
     assert(alignment > 0);
     assert(size > 0);
     return ((size + alignment - 1) / alignment) * alignment;
@@ -71,13 +78,20 @@ struct Chunk {
     char memory[];
 };
 
-static __attribute__((__warn_unused_result__)) struct Chunk *Chunk_new(size_t capacityHint) {
+static __attribute__((__warn_unused_result__, __nonnull__(1)))
+struct Chunk *Chunk_new(const char *const file, const int line, const size_t capacityHint) {
+    assert(NULL != file);
+    assert(line > 0);
     const size_t capacity = roundToAlignBoundary(maxAlign, max(capacityHint, ARENA_DEFAULT_CHUNK_CAPACITY));
-    struct Chunk *self = Option_unwrap(
+    struct Chunk *self = __Option_expect(
+            file,
+            line,
             Alligator_aligned_alloc(
                     maxAlign,
                     roundToAlignBoundary(maxAlign, offsetof(struct Chunk, memory)) + capacity * sizeof(self->memory[0])
-            )
+            ),
+            "%s",
+            "Out of memory"
     );
 
     self->size = 0;
@@ -86,7 +100,7 @@ static __attribute__((__warn_unused_result__)) struct Chunk *Chunk_new(size_t ca
     return self;
 }
 
-static inline void Chunk_delete(struct Chunk *self) {
+static inline void Chunk_delete(struct Chunk *const self) {
     Alligator_free(self);
 }
 
@@ -98,13 +112,12 @@ struct Arena {
     size_t slop;
 };
 
-struct Arena *Arena_new(void) {
-    return Arena_withCapacity(ARENA_DEFAULT_CHUNK_CAPACITY);
-}
-
-struct Arena *Arena_withCapacity(const size_t capacityHint) {
-    struct Arena *self = Option_unwrap(Alligator_aligned_alloc(alignof(*self), sizeof(*self)));
-    struct Chunk *chunk = Chunk_new(capacityHint);
+static __attribute__((__warn_unused_result__, __nonnull__(1)))
+struct Arena *__Arena_new(const char *const file, const int line, const size_t capacityHint) {
+    assert(NULL != file);
+    assert(line > 0);
+    struct Arena *self = __Option_expect(file, line, Alligator_aligned_alloc(alignof(struct Arena), sizeof(*self)), "%s", "Out of memory");
+    struct Chunk *chunk = Chunk_new(file, line, capacityHint);
     self->size = self->slop = 0;
     self->capacity = chunk->capacity;
     self->chunks = 1;
@@ -112,16 +125,29 @@ struct Arena *Arena_withCapacity(const size_t capacityHint) {
     return self;
 }
 
-void *Arena_request(struct Arena *const self, const size_t size) {
-    assert(self);
-    assert(self->head);
-    assert(size > 0);
-    return Arena_requestWithAlignment(self, maxAlign, roundToAlignBoundary(maxAlign, size));
+struct Arena *Arena_new(void) {
+    return __Arena_new(__FILE__, __LINE__, ARENA_DEFAULT_CHUNK_CAPACITY);
 }
 
-void *Arena_requestWithAlignment(struct Arena *const self, const size_t alignment, const size_t size) {
-    assert(self);
-    assert(self->head);
+struct Arena *Arena_withCapacity(const size_t capacityHint) {
+    return __Arena_new(__FILE__, __LINE__, capacityHint);
+}
+
+void *__Arena_request(const char *const file, const int line, struct Arena *const self, const size_t size) {
+    assert(NULL != file);
+    assert(line > 0);
+    assert(NULL != self);
+    assert(NULL != self->head);
+    assert(size > 0);
+    return __Arena_requestWithAlignment(file, line, self, maxAlign, roundToAlignBoundary(maxAlign, size));
+}
+
+void *__Arena_requestWithAlignment(const char *const file, const int line,
+                                   struct Arena *const self, const size_t alignment, const size_t size) {
+    assert(NULL != file);
+    assert(line > 0);
+    assert(NULL != self);
+    assert(NULL != self->head);
     assert(alignment > 0);
     assert(size > 0);
     assertIsPowerOfTwo(alignment);
@@ -131,7 +157,7 @@ void *Arena_requestWithAlignment(struct Arena *const self, const size_t alignmen
     void *memory;
     for (struct Chunk *chunk = self->head; chunk; chunk = chunk->next) {
         memory = chunk->memory + chunk->size;
-        slop = (((((uintptr_t) memory) + alignment - 1) / alignment) * alignment) - (uintptr_t) memory;
+        slop = roundToAlignBoundary(alignment, (uintptr_t) memory) - (uintptr_t) memory;
         if (chunk->size + slop + size <= chunk->capacity) {
             memory += slop;
             chunk->size += slop + size;
@@ -142,7 +168,7 @@ void *Arena_requestWithAlignment(struct Arena *const self, const size_t alignmen
         }
     }
 
-    struct Chunk *chunk = Chunk_new(size);
+    struct Chunk *chunk = Chunk_new(file, line, size);
     assertIsIntegralMultiple(alignment, (uintptr_t) chunk->memory);
     chunk->size += size;
     chunk->next = self->head;
