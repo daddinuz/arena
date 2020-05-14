@@ -1,8 +1,8 @@
 /*
  * The MIT License (MIT)
- * 
- * Copyright (c) 2020 Davide Di Carlo
- * 
+ *
+ * Copyright (c) 2019 Davide Di Carlo
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,32 +25,15 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdalign.h>
-#include <assert.h>
-#include <stdio.h>
-#include <arena.h>
+#pragma once
 
-static void printArena(const struct Arena *self);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int main() {
-    struct Arena *const arena = Arena_default();
-    const long double number = 42.0f;
-    const char string[] = "Hello World!\n";
+#define __stringify(s)  #s
+#define stringify(s)    __stringify(s)
 
-    printArena(arena);
-    const long double *const a = Arena_clone(arena, &number, alignof(number), sizeof(number));
-    const char *const b = Arena_clone(arena, string, alignof(string), sizeof(string));
-    const int *const c = Arena_allocate(arena, alignof(*c), sizeof(*c));
-    printArena(arena);
-
-    printf("%sThe number of the day is: %LF\nUninitialized value: %d\n", b, *a, *c);
-
-    Arena_drop(arena);
-    return 0;
+#ifdef __cplusplus
 }
-
-static void printArena(const struct Arena *const self) {
-    assert(NULL != self);
-    printf("Arena(available=%zu, capacity=%zu, size=%zu)\n",
-           Arena_available(self), Arena_capacity(self), Arena_size(self));
-}
+#endif

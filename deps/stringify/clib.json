@@ -1,0 +1,14 @@
+{
+  "name": "stringify",
+  "repo": "daddinuz/stringify",
+  "version": "2.0.0",
+  "license": "MIT",
+  "description": "Stringify all the things!",
+  "keywords": [
+    "stringify",
+    "macro"
+  ],
+  "src": [
+    "sources/stringify.h"
+  ]
+}

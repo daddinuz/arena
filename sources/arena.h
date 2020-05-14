@@ -1,205 +1,137 @@
 /*
-Author: daddinuz
-email:  daddinuz@gmail.com
-
-Copyright (c) 2018 Davide Di Carlo
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2020 Davide Di Carlo
+ * 
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #pragma once
-
-#include <stddef.h>
-
-#if !(defined(__GNUC__) || defined(__clang__))
-__attribute__(...)
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define ARENA_VERSION_MAJOR         0
-#define ARENA_VERSION_MINOR         5
-#define ARENA_VERSION_PATCH         0
-#define ARENA_VERSION_SUFFIX        ""
-#define ARENA_VERSION_IS_RELEASE    0
-#define ARENA_VERSION_HEX           0x000500
+#include <stddef.h>
 
-/**
- * @attention Every function in this library terminates the program in case of out of memory.
- */
+#if !defined(ARENA_DEFAULT_CAPACITY)
+#define ARENA_DEFAULT_CAPACITY  512u
+#endif
 
-/**
- * Arena is a region of memory which holds a collection of allocated objects
- * that can be efficiently de-allocated all at once.
- */
+#if !defined(ARENA_MIN_CAPACITY)
+#define ARENA_MIN_CAPACITY      32u
+#endif
+
+#if !defined(__GNUC__)
+#define __attribute__(...)
+#endif
+
 struct Arena;
 
 /**
  * Creates a new arena with default capacity.
- *
- * @return A new arena instance.
+ * 
+ * @attention Out of memory is a checked runtime error.
  */
-extern struct Arena *Arena_new(void)
+extern struct Arena *Arena_default(void)
 __attribute__((__warn_unused_result__));
 
 /**
- * Creates a new arena with at least the suggested capacity.
- *
- * @param capacityHint The suggested capacity for the arena (if smaller than default capacity the last one will be used).
- * @return A new arena instance.
+ * Creates a new arena with at least the specified capacity.
+ * 
+ * @attention (0 == capacity) is a checked runtime error.
+ * @attention Out of memory is a checked runtime error.
  */
-extern struct Arena *Arena_withCapacity(size_t capacityHint)
-__attribute__((__warn_unused_result__));
+extern struct Arena *Arena_withCapacity(size_t capacity)
+__attribute__((__warn_unused_result__, __alloc_size__(1)));
 
 /**
- * Returns a block of allocated memory of the specified size using the strictest alignment.
+ * Returns a block of allocated memory of the specified size using the specified alignment.
  *
- * @param self The arena instance.
- * @param size The size of the requested memory block.
- *
- * @attention self must not be NULL.
- * @attention size must be greater than 0.
- *
- * @return The requested memory block.
+ * @attention (NULL == self) is a checked runtime error.
+ * @attention Invalid alignment values are checked runtime errors.
+ * @attention (0 == size) is a checked runtime error.
+ * @attention Out of memory is a checked runtime error.
  */
-#define Arena_request(self, size) \
-    __Arena_request((__FILE__), (__LINE__), (self), (size))
+extern void *Arena_allocate(struct Arena *self, size_t alignment, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__(1), __alloc_size__(3)));
 
 /**
- * Returns a block of allocated memory of the specified size.
+ * Clones and returns the object pointed by data.
  *
- * @param self The arena instance.
- * @param alignment The alignment for the memory block.
- * @param size The size of the requested memory block.
- *
- * @attention self must not be NULL.
- * @attention alignment must not be NULL.
- * @attention alignment must be a power of 2.
- * @attention size must be greater than 0.
- * @attention size must be an integral multiple of alignment.
- *
- * @return The requested memory block.
+ * @attention (NULL == self) is a checked runtime error.
+ * @attention (NULL == data) is a checked runtime error.
+ * @attention Invalid alignment values are checked runtime errors.
+ * @attention (0 == size) is a checked runtime error.
+ * @attention Out of memory is a checked runtime error.
  */
-#define Arena_requestWithAlignment(self, alignment, size) \
-    __Arena_requestWithAlignment((__FILE__), (__LINE__), (self), (alignment), (size))
+extern void *Arena_clone(struct Arena *self, const void *data, size_t alignment, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__(1, 2), __alloc_size__(4)));
 
 /**
- * Gets the size of the memory currently in use by the arena.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The size of the memory currently in use by the arena.
+ * Clears the content of the arena (without releasing memory).
+ * All references obtained by calling Arena_allocate before calling
+ * this function are invalidated.
+ * 
+ * @attention (NULL == self) is a checked runtime error.
  */
-extern size_t Arena_getSize(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
+extern void Arena_clear(struct Arena *self)
+__attribute__((__nonnull__(1)));
 
 /**
- * Gets the size of the slop memory currently in use by the arena.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The size of the slop memory currently in use by the arena.
+ * Drops the arena releasing memory.
+ * All references obtained by calling Arena_allocate before calling
+ * this function are invalidated.
+ * 
+ * After calling this method self is invalidated.
+ * 
+ * @attention (NULL == self) is a checked runtime error.
  */
-extern size_t Arena_getSlop(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
-
-/**
- * Gets the current capacity of the arena.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The current capacity of the arena.
- */
-extern size_t Arena_getCapacity(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
+extern void Arena_drop(struct Arena *self)
+__attribute__((__nonnull__(1)));
 
 /**
  * Gets the size of the biggest segment of memory currently available.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The size of the biggest segment of memory currently available.
+ * 
+ * @attention (NULL == self) is a checked runtime error.
  */
-extern size_t Arena_getBestAvailable(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
+extern size_t Arena_available(const struct Arena *self)
+__attribute__((__warn_unused_result__, __nonnull__(1)));
 
 /**
- * Gets the size of the smallest segment of memory currently available.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The size of the smallest segment of memory currently available.
+ * Gets the capacity of the arena.
+ * 
+ * @attention (NULL == self) is a checked runtime error.
  */
-extern size_t Arena_getWorstAvailable(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
+extern size_t Arena_capacity(const struct Arena *self)
+__attribute__((__warn_unused_result__, __nonnull__(1)));
 
 /**
- * Gets the number of chunks held by the arena.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- * @return The number of chunks held by the arena.
+ * Gets the size of the memory currently in use by the arena (including slop memory).
+ * 
+ * @attention (NULL == self) is a checked runtime error.
  */
-extern size_t Arena_getChunks(const struct Arena *self)
-__attribute__((__warn_unused_result__, __nonnull__));
-
-/**
- * Frees the memory held by the arena without deallocating it.
- * Any reference to memory obtained before calling this function is invalidated.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- */
-extern void Arena_clear(struct Arena *self)
-__attribute__((__nonnull__));
-
-/**
- * Shrinks the arena deallocating chunks not in use.
- *
- * @param self The arena instance.
- * @attention self must not be NULL.
- */
-extern void Arena_shrink(struct Arena *self)
-__attribute__((__nonnull__));
-
-/**
- * Deletes an arena.
- *
- * @param self The arena instance.
- */
-extern void Arena_delete(struct Arena *self);
-
-/**
- * @attention this function must be treated as opaque therefore must not be called directly.
- */
-extern void *__Arena_request(const char *file, int line, struct Arena *self, size_t size)
-__attribute__((__warn_unused_result__, __nonnull__));
-
-/**
- * @attention this function must be treated as opaque therefore must not be called directly.
- */
-extern void *__Arena_requestWithAlignment(const char *file, int line, struct Arena *self, size_t alignment, size_t size)
-__attribute__((__warn_unused_result__, __nonnull__));
+extern size_t Arena_size(const struct Arena *self)
+__attribute__((__warn_unused_result__, __nonnull__(1)));
 
 #ifdef __cplusplus
 }
