@@ -39,7 +39,7 @@ int main() {
 
     printArena(arena);
     const long double *const a = Arena_clone(arena, &number, alignof(number), sizeof(number));
-    const char *const b = Arena_clone(arena, &string, alignof(string), sizeof(string));
+    const char *const b = Arena_clone(arena, string, alignof(string), sizeof(string));
     const int *const c = Arena_allocate(arena, alignof(*c), sizeof(*c));
     printArena(arena);
 
